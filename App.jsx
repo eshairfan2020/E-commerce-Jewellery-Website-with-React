@@ -1,49 +1,57 @@
-import { useState, createContext, useContext, useEffect, useRef, useCallback } from "react";
+import { useState, createContext, useContext, useEffect, useMemo, useRef, useCallback } from "react";
 import "./App.css";
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    DATA
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const PRODUCTS = [
-  { id:1,  name:"Gold Necklace",       price:120, originalPrice:160, image:"https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&auto=format&fit=crop",  category:"necklace", rating:4.8, reviews:124, badge:"Bestseller", stock:8  },
-  { id:2,  name:"Diamond Ring",        price:250, originalPrice:320, image:"https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=600&auto=format&fit=crop",  category:"ring",     rating:4.9, reviews:89,  badge:"New",        stock:0  },
-  { id:3,  name:"Pearl Earrings",      price:90,  originalPrice:90,  image:"https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=600&auto=format&fit=crop",  category:"earrings", rating:4.7, reviews:203, badge:"Classic",    stock:15 },
-  { id:4,  name:"Gold Bracelet",       price:90,  originalPrice:120, image:"https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?w=600&auto=format&fit=crop",  category:"bracelet", rating:4.6, reviews:67,  badge:"Sale",       stock:3  },
-  { id:5,  name:"Heart Necklace",      price:200, originalPrice:200, image:"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop",  category:"necklace", rating:4.9, reviews:312, badge:"Popular",    stock:0  },
-  { id:6,  name:"Rose Gold Ring",      price:180, originalPrice:220, image:"https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?w=600&auto=format&fit=crop",  category:"ring",     rating:4.9, reviews:140, badge:"Popular",    stock:6  },
-  { id:7,  name:"Luxury Diamond Set",  price:850, originalPrice:999, image:"https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=600&auto=format&fit=crop",  category:"earrings", rating:5.0, reviews:210, badge:"Luxury",     stock:2  },
-  { id:8,  name:"Clove Bracelet",      price:100, originalPrice:130, image:"https://images.unsplash.com/photo-1573408301185-9519f94815b8?w=600&auto=format&fit=crop",  category:"bracelet", rating:4.5, reviews:44,  badge:"Sale",       stock:11 },
-  { id:9,  name:"Titanium Steel Cuff", price:600, originalPrice:600, image:"https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&auto=format&fit=crop",  category:"bracelet", rating:4.8, reviews:28,  badge:"Luxury",     stock:0  },
-  { id:10, name:"Royal Gold Bracelet", price:320, originalPrice:400, image:"https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop",  category:"bracelet", rating:4.8, reviews:120, badge:"Sale",       stock:4  },
+  { id:1,  name:"Gold Necklace",       price:120, originalPrice:160, image:"https://images.unsplash.com/photo-1602173574767-37ac01994b2a?w=600&auto=format&fit=crop", category:"necklace", rating:4.8, reviews:124, badge:"Bestseller", stock:8  },
+  { id:2,  name:"Diamond Ring",        price:250, originalPrice:320, image:"https://images.unsplash.com/photo-1603565816030-6b389eeb23cb?w=600&auto=format&fit=crop", category:"ring",     rating:4.9, reviews:89,  badge:"New",        stock:0  },
+  { id:3,  name:"Pearl Earrings",      price:90,  originalPrice:90,  image:"https://images.unsplash.com/photo-1617038220319-276d3cfab638?w=600&auto=format&fit=crop", category:"earrings", rating:4.7, reviews:203, badge:"Classic",    stock:15 },
+  { id:4,  name:"Gold Bracelet",       price:90,  originalPrice:120, image:"https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6?w=600&auto=format&fit=crop", category:"bracelet", rating:4.6, reviews:67,  badge:"Sale",       stock:3  },
+  { id:5,  name:"Heart Necklace",      price:200, originalPrice:200, image:"https://images.unsplash.com/photo-1512436991641-6745cdb1723f?w=600&auto=format&fit=crop", category:"necklace", rating:4.9, reviews:312, badge:"Popular",    stock:0  },
+  { id:6,  name:"Rose Gold Ring",      price:180, originalPrice:220, image:"https://images.unsplash.com/photo-1588444837495-c6cfeb53f32d?w=600&auto=format&fit=crop", category:"ring",     rating:4.9, reviews:140, badge:"Popular",    stock:6  },
+  { id:7,  name:"Luxury Diamond Set",  price:850, originalPrice:999, image:"https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=600&auto=format&fit=crop", category:"earrings", rating:5.0, reviews:210, badge:"Luxury",     stock:2  },
+  { id:8,  name:"Clove Bracelet",      price:100, originalPrice:130, image:"https://images.unsplash.com/photo-1573408301185-9519f94815b8?w=600&auto=format&fit=crop", category:"bracelet", rating:4.5, reviews:44,  badge:"Sale",       stock:11 },
+  { id:9,  name:"Titanium Steel Cuff", price:600, originalPrice:600, image:"https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=600&auto=format&fit=crop", category:"bracelet", rating:4.8, reviews:28,  badge:"Luxury",     stock:0  },
+  { id:10, name:"Royal Gold Bracelet", price:320, originalPrice:400, image:"https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=600&auto=format&fit=crop", category:"bracelet", rating:4.8, reviews:120, badge:"Sale",       stock:4  },
 ];
 
 const EMOJI      = { necklace:"📿", ring:"💍", earrings:"✨", bracelet:"⌚" };
 const CATEGORIES = ["all","necklace","ring","earrings","bracelet"];
-
 const TESTIMONIALS = [
-  { name:"Sofia R.",  avatar:"S", text:"Absolutely stunning quality. The gold necklace exceeded every expectation — packaging was exquisite.", stars:5 },
-  { name:"Amara K.",  avatar:"A", text:"Fast shipping, beautiful packaging. The diamond ring is breathtaking in person — worth every penny.", stars:5 },
-  { name:"Layla M.",  avatar:"L", text:"I've ordered three times now. Every piece is crafted with incredible attention to detail. Truly luxury.", stars:5 },
+  { name:"Sofia R.", text:"Absolutely stunning quality. The gold necklace exceeded every expectation — packaging was exquisite.", stars:5 },
+  { name:"Amara K.", text:"Fast shipping, beautiful packaging. The diamond ring is breathtaking in person — worth every penny.", stars:5 },
+  { name:"Layla M.", text:"I've ordered three times now. Every piece is crafted with incredible attention to detail. Truly luxury.", stars:5 },
 ];
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    CONTEXT
-══════════════════════════════════════ */
-const AppContext = createContext();
+══════════════════════════════════════════════════ */
+const AppContext = createContext(null);
 const useApp = () => useContext(AppContext);
 
 function AppProvider({ children }) {
   const [cart,     setCart]     = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [toasts,   setToasts]   = useState([]);
+  const [stockMap, setStockMap] = useState(
+    () => Object.fromEntries(PRODUCTS.map(p => [p.id, p.stock]))
+  );
 
   const addToast = useCallback((msg, type = "success") => {
     const id = Date.now() + Math.random();
-    setToasts(t => [...t, { id, msg, type }]);
-    setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3200);
+    setToasts(prev => [...prev, { id, msg, type }]);
+    setTimeout(() => setToasts(prev => prev.filter(x => x.id !== id)), 3000);
   }, []);
 
-  const addToCart = (product) => {
+  const addToCart = useCallback((product) => {
+    const curStock = stockMap[product.id] ?? 0;
+    if (curStock <= 0) {
+      addToast("Sorry, this item is sold out", "info");
+      return;
+    }
+    setStockMap(prev => ({ ...prev, [product.id]: prev[product.id] - 1 }));
     setCart(prev => {
       const found = prev.find(i => i.id === product.id);
       return found
@@ -51,95 +59,124 @@ function AppProvider({ children }) {
         : [...prev, { ...product, qty: 1 }];
     });
     addToast(`${product.name} added to cart ✓`);
-  };
+  }, [stockMap, addToast]);
 
-  const changeQty = (id, delta) =>
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty: i.qty + delta } : i).filter(i => i.qty > 0));
+  const changeQty = useCallback((id, delta) => {
+    if (delta > 0) {
+      const curStock = stockMap[id] ?? 0;
+      if (curStock <= 0) { addToast("No more stock available", "info"); return; }
+      setStockMap(prev => ({ ...prev, [id]: prev[id] - 1 }));
+    } else {
+      setStockMap(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+    }
+    setCart(prev =>
+      prev.map(i => i.id === id ? { ...i, qty: i.qty + delta } : i).filter(i => i.qty > 0)
+    );
+  }, [stockMap, addToast]);
 
-  const removeFromCart = id => setCart(prev => prev.filter(i => i.id !== id));
-  const clearCart      = () => setCart([]);
+  const removeFromCart = useCallback((id) => {
+    const item = cart.find(i => i.id === id);
+    if (item) setStockMap(prev => ({ ...prev, [id]: (prev[id] ?? 0) + item.qty }));
+    setCart(prev => prev.filter(i => i.id !== id));
+  }, [cart]);
 
-  const toggleWishlist = (product) => {
+  const clearCart = useCallback(() => {
+    setStockMap(prev => {
+      const next = { ...prev };
+      cart.forEach(i => { next[i.id] = (next[i.id] ?? 0) + i.qty; });
+      return next;
+    });
+    setCart([]);
+  }, [cart]);
+
+  const toggleWishlist = useCallback((product) => {
     const exists = wishlist.find(i => i.id === product.id);
     setWishlist(prev => exists ? prev.filter(i => i.id !== product.id) : [...prev, product]);
     addToast(exists ? "Removed from wishlist" : "Saved to wishlist ♥", exists ? "info" : "success");
-  };
+  }, [wishlist, addToast]);
 
-  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
-  const cartTotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const cartCount  = cart.reduce((s, i) => s + i.qty, 0);
+  const cartTotal  = cart.reduce((s, i) => s + i.price * i.qty, 0);
+  const liveProducts = PRODUCTS.map(p => ({ ...p, stock: stockMap[p.id] ?? p.stock }));
 
   return (
-    <AppContext.Provider value={{ cart, wishlist, cartCount, cartTotal, toasts, addToCart, changeQty, removeFromCart, clearCart, toggleWishlist }}>
+    <AppContext.Provider value={{
+      cart, wishlist, toasts, cartCount, cartTotal, liveProducts,
+      addToCart, changeQty, removeFromCart, clearCart, toggleWishlist,
+    }}>
       {children}
     </AppContext.Provider>
   );
 }
 
-/* ══════════════════════════════════════
-   TOASTS
-══════════════════════════════════════ */
-function Toasts() {
-  const { toasts } = useApp();
-  return (
-    <div className="toast-container">
-      {toasts.map(t => <div key={t.id} className={`toast toast-${t.type}`}>{t.msg}</div>)}
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════
-   PARTICLES
-══════════════════════════════════════ */
-function Particles() {
-  const pts = useRef(Array.from({ length: 18 }, (_, i) => ({
-    key: i, left: `${(i * 19 + 3) % 100}%`,
-    delay: `${(i * 0.6) % 8}s`, 
-    duration: `${7 + (i % 5)}s`,
-    size: `${2 + (i % 3)}px`,
-     opacity: 0.15 + (i % 5) * 0.09,
-  })),[]).current;
-  return (
-    <div className="particles" aria-hidden="true">
-      {pts.map(p => (
-        <div key={p.key} className="particle" style={{ left:p.left, animationDelay:p.delay, animationDuration:p.duration, width:p.size, height:p.size, opacity:p.opacity }} />
-      ))}
-    </div>
-  );
-}
-
-/* ══════════════════════════════════════
-   PRODUCT IMAGE
-══════════════════════════════════════ */
-function ProductImage({ src, category, className, alt }) {
+/* ══════════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════════ */
+function ProductImage({ src, category, className }) {
   const [broken, setBroken] = useState(false);
   if (!src || broken)
     return <div className={`${className} img-placeholder`}>{EMOJI[category] || "💎"}</div>;
-  return <img className={className} src={src} alt={alt || ""} onError={() => setBroken(true)} />;
+  return <img className={className} src={src} alt="" onError={() => setBroken(true)} />;
 }
 
-/* ══════════════════════════════════════
-   STARS
-══════════════════════════════════════ */
 function Stars({ rating }) {
   return (
     <div className="stars">
-      {[1,2,3,4,5].map(s => <span key={s} className={s <= Math.round(rating) ? "star filled" : "star"}>★</span>)}
+      {[1,2,3,4,5].map(s => (
+        <span key={s} className={s <= Math.round(rating) ? "star filled" : "star"}>★</span>
+      ))}
       <span className="rating-num">{rating}</span>
     </div>
   );
 }
 
-/* ══════════════════════════════════════
+function Toasts() {
+  const { toasts } = useApp();
+  return (
+    <div className="toast-container">
+      {toasts.map(t => (
+        <div key={t.id} className={`toast toast-${t.type}`}>{t.msg}</div>
+      ))}
+    </div>
+  );
+}
+
+function Particles() {
+  const pts = useMemo(() => {
+    return Array.from({ length: 16 }, (_, i) => ({
+      key: i,
+      left: `${(i * 19 + 3) % 100}%`,
+      delay: `${(i * 0.6) % 8}s`,
+      duration: `${7 + (i % 5)}s`,
+      size: `${2 + (i % 3)}px`,
+      opacity: 0.15 + (i % 5) * 0.09,
+    }))
+  }, []);
+  return (
+    <div className="particles" aria-hidden="true">
+      {pts.map(p => (
+        <div key={p.key} className="particle" style={{
+          left: p.left, animationDelay: p.delay, animationDuration: p.duration,
+          width: p.size, height: p.size, opacity: p.opacity,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════
    NAVBAR
-══════════════════════════════════════ */
-function Navbar({ onCartOpen, onWishlistOpen, step, setStep }) {
+══════════════════════════════════════════════════ */
+function Navbar({ step, setStep, onCartOpen, onWishlistOpen }) {
   const { cartCount, wishlist } = useApp();
   const [scrolled, setScrolled] = useState(false);
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", fn);
     return () => window.removeEventListener("scroll", fn);
   }, []);
+
   return (
     <nav className={`navbar${scrolled ? " scrolled" : ""}`}>
       <div className="navbar-brand" onClick={() => setStep("home")}>
@@ -147,24 +184,24 @@ function Navbar({ onCartOpen, onWishlistOpen, step, setStep }) {
       </div>
       <div className="nav-links">
         {[["home","Home"],["shop","Collection"],["about","About"],["contact","Contact"]].map(([s,l]) => (
-          <button key={s} className={`nav-link${step===s?" active":""}`} onClick={() => setStep(s)}>{l}</button>
+          <button key={s} className={`nav-link${step === s ? " active" : ""}`} onClick={() => setStep(s)}>{l}</button>
         ))}
       </div>
       <div className="nav-actions">
-        <button className="icon-btn" onClick={onWishlistOpen} title="Wishlist">
-          ♥{wishlist.length > 0 && <span className="badge">{wishlist.length}</span>}
+        <button className="icon-btn" onClick={onWishlistOpen}>
+          ♥ {wishlist.length > 0 && <span className="badge">{wishlist.length}</span>}
         </button>
-        <button className="icon-btn" onClick={onCartOpen} title="Cart">
-          🛍{cartCount > 0 && <span className="badge">{cartCount}</span>}
+        <button className="icon-btn" onClick={onCartOpen}>
+          🛍 {cartCount > 0 && <span className="badge">{cartCount}</span>}
         </button>
       </div>
     </nav>
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    HERO
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Hero({ onShop }) {
   return (
     <section className="hero">
@@ -202,29 +239,29 @@ function Hero({ onShop }) {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    3D PRODUCT CARD
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function ProductCard({ product, onQuickView, index }) {
   const { addToCart, toggleWishlist, wishlist } = useApp();
   const [added, setAdded] = useState(false);
-  const [tilt,  setTilt]  = useState({ x:0, y:0 });
-  const cardRef   = useRef(null);
-  const wished    = wishlist.some(i => i.id === product.id);
-  const soldOut   = product.stock === 0;
-  const lowStock  = product.stock > 0 && product.stock <= 3;
-  const discount  = product.originalPrice > product.price
+  const [tilt,  setTilt]  = useState({ x: 0, y: 0 });
+  const cardRef  = useRef(null);
+  const wished   = wishlist.some(i => i.id === product.id);
+  const soldOut  = product.stock === 0;
+  const lowStock = product.stock > 0 && product.stock <= 3;
+  const discount = product.originalPrice > product.price
     ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
 
-  const onMove = e => {
-    if (soldOut) return;
+  const onMove = (e) => {
+    if (soldOut || !cardRef.current) return;
     const r = cardRef.current.getBoundingClientRect();
     setTilt({
-      x: ((e.clientY - r.top)  / r.height - 0.5) * 16,
-      y: ((e.clientX - r.left) / r.width  - 0.5) * -16,
+      x: ((e.clientY - r.top)  / r.height - 0.5) * 14,
+      y: ((e.clientX - r.left) / r.width  - 0.5) * -14,
     });
   };
-// Sold out option//
+
   const handleAdd = () => {
     if (soldOut) return;
     addToCart(product);
@@ -236,30 +273,33 @@ function ProductCard({ product, onQuickView, index }) {
     <div
       ref={cardRef}
       className={`card${soldOut ? " card-sold-out" : ""}`}
-      style={{ transform:`perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`, animationDelay:`${index * 0.07}s` }}
+      style={{
+        transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
+        animationDelay: `${index * 0.06}s`,
+      }}
       onMouseMove={onMove}
-      onMouseLeave={() => setTilt({ x:0, y:0 })}
+      onMouseLeave={() => setTilt({ x: 0, y: 0 })}
     >
-      {/* Sold Out ribbon */}
       {soldOut && <div className="sold-out-ribbon">Sold Out</div>}
-
-      {/* Badge — hide if sold out */}
-      {!soldOut && product.badge && <div className={`card-badge badge-${product.badge.toLowerCase()}`}>{product.badge}</div>}
-      {!soldOut && discount > 0   && <div className="card-discount">-{discount}%</div>}
+      {!soldOut && product.badge && (
+        <div className={`card-badge badge-${product.badge.toLowerCase()}`}>{product.badge}</div>
+      )}
+      {!soldOut && discount > 0 && <div className="card-discount">-{discount}%</div>}
 
       <div className="card-img-wrap">
-        <ProductImage src={product.image} category={product.category} className="card-img" alt={product.name} />
-
-        {/* Sold-out overlay on image */}
-        {soldOut && <div className="sold-out-overlay"><span>Sold Out</span></div>}
-
-        {/* Quick view only when in stock */}
+        <ProductImage src={product.image} category={product.category} className="card-img" />
+        {soldOut && (
+          <div className="sold-out-overlay"><span>Sold Out</span></div>
+        )}
         {!soldOut && (
           <div className="card-img-overlay">
             <button className="overlay-btn" onClick={() => onQuickView(product)}>Quick View</button>
           </div>
         )}
-        <button className={`wish-btn${wished ? " wished" : ""}`} onClick={() => toggleWishlist(product)}>
+        <button
+          className={`wish-btn${wished ? " wished" : ""}`}
+          onClick={() => toggleWishlist(product)}
+        >
           {wished ? "♥" : "♡"}
         </button>
       </div>
@@ -270,15 +310,11 @@ function ProductCard({ product, onQuickView, index }) {
         <Stars rating={product.rating} />
         <div className="card-reviews">({product.reviews} reviews)</div>
 
-        {/* Stock indicator */}
         {soldOut  && <div className="stock-tag stock-out">✕ Out of Stock</div>}
         {lowStock && <div className="stock-tag stock-low">⚡ Only {product.stock} left</div>}
 
         <div className="card-pricing">
-          {soldOut
-            ? <span className="card-price sold-out-price">${product.price}</span>
-            : <span className="card-price">${product.price}</span>
-          }
+          <span className={`card-price${soldOut ? " sold-out-price" : ""}`}>${product.price}</span>
           {!soldOut && discount > 0 && <span className="card-original">${product.originalPrice}</span>}
         </div>
 
@@ -294,21 +330,27 @@ function ProductCard({ product, onQuickView, index }) {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    QUICK VIEW MODAL
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Modal({ product, onClose }) {
   const { addToCart } = useApp();
   const [added, setAdded] = useState(false);
   const [qty,   setQty]   = useState(1);
+  const soldOut  = product.stock === 0;
   const discount = product.originalPrice > product.price
     ? Math.round((1 - product.price / product.originalPrice) * 100) : 0;
 
-  useEffect(() => { document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = ""; }; }, []);
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = ""; };
+  }, []);
 
   const handleAdd = () => {
+    if (soldOut) return;
     for (let i = 0; i < qty; i++) addToCart(product);
-    setAdded(true); setTimeout(() => setAdded(false), 1200);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
   };
 
   return (
@@ -316,8 +358,9 @@ function Modal({ product, onClose }) {
       <div className="modal" onClick={e => e.stopPropagation()}>
         <button className="modal-close" onClick={onClose}>✕</button>
         <div className="modal-img-wrap">
-          <ProductImage src={product.image} category={product.category} className="modal-img" alt={product.name} />
-          {discount > 0 && <div className="modal-discount-tag">-{discount}% OFF</div>}
+          <ProductImage src={product.image} category={product.category} className="modal-img" />
+          {discount > 0 && !soldOut && <div className="modal-discount-tag">-{discount}% OFF</div>}
+          {soldOut && <div className="sold-out-overlay"><span>Sold Out</span></div>}
         </div>
         <div className="modal-body">
           <div className="modal-category">{product.category}</div>
@@ -325,27 +368,36 @@ function Modal({ product, onClose }) {
           <Stars rating={product.rating} />
           <p className="modal-review-count">{product.reviews} verified reviews</p>
           <div className="modal-pricing">
-            <span className="modal-price">${product.price}</span>
-            {discount > 0 && <span className="modal-original">${product.originalPrice}</span>}
+            <span className={`modal-price${soldOut ? " sold-out-price" : ""}`}>${product.price}</span>
+            {!soldOut && discount > 0 && <span className="modal-original">${product.originalPrice}</span>}
           </div>
-          <p className="modal-desc">A hand-selected masterpiece from our curated collection. Crafted with 18k gold and premium gemstones for those who demand the very finest.</p>
+          <p className="modal-desc">
+            A hand-selected masterpiece from our curated collection. Crafted with 18k gold
+            and premium gemstones for those who demand the very finest.
+          </p>
           <div className="modal-features">
             <span className="feature-tag">✦ 18k Gold</span>
             <span className="feature-tag">✦ Handcrafted</span>
             <span className="feature-tag">✦ Certified</span>
             <span className="feature-tag">✦ Gift Boxed</span>
           </div>
-          <div className="modal-qty-row">
-            <span className="qty-label">Quantity</span>
-            <div className="qty-ctrl">
-              <button className="qty-btn" onClick={() => setQty(q => Math.max(1,q-1))}>−</button>
-              <span className="qty-num">{qty}</span>
-              <button className="qty-btn" onClick={() => setQty(q => q+1)}>+</button>
+          {!soldOut && (
+            <div className="modal-qty-row">
+              <span className="qty-label">Quantity</span>
+              <div className="qty-ctrl">
+                <button className="qty-btn" onClick={() => setQty(q => Math.max(1, q - 1))}>−</button>
+                <span className="qty-num">{qty}</span>
+                <button className="qty-btn" onClick={() => setQty(q => q + 1)}>+</button>
+              </div>
             </div>
-          </div>
-          <button className={`btn-modal-add${added?" btn-added":""}`} onClick={handleAdd}>
-            {added ? "✓ Added to Cart" : `Add to Cart — $${product.price * qty}`}
-          </button>
+          )}
+          {soldOut ? (
+            <button className="btn-modal-add btn-sold-out" disabled>Sold Out</button>
+          ) : (
+            <button className={`btn-modal-add${added ? " btn-added" : ""}`} onClick={handleAdd}>
+              {added ? "✓ Added to Cart" : `Add to Cart — $${product.price * qty}`}
+            </button>
+          )}
           <p className="modal-shipping">🚚 Free worldwide shipping · 30-day returns</p>
         </div>
       </div>
@@ -353,74 +405,46 @@ function Modal({ product, onClose }) {
   );
 }
 
-/* ══════════════════════════════════════
-   WISHLIST PANEL
-══════════════════════════════════════ */
-function WishlistPanel({ open, onClose }) {
-  const { wishlist, addToCart, toggleWishlist } = useApp();
-  return (
-    <>
-      <div className={`overlay${open?" show":""}`} onClick={onClose} />
-      <div className={`side-panel${open?" open":""}`}>
-        <div className="panel-header">
-          <div className="panel-title">Wishlist ♥</div>
-          <button className="close-btn" onClick={onClose}>✕</button>
-        </div>
-        <div className="panel-items">
-          {wishlist.length === 0 ? (
-            <div className="panel-empty"><div className="panel-empty-icon">♡</div><div>Your wishlist is empty</div></div>
-          ) : wishlist.map(item => (
-            <div className="panel-item" key={item.id}>
-              <ProductImage src={item.image} category={item.category} className="panel-item-img" alt={item.name} />
-              <div className="panel-item-info">
-                <div className="panel-item-name">{item.name}</div>
-                <div className="panel-item-price">${item.price}</div>
-              </div>
-              <div className="panel-item-actions">
-                <button className="btn-small-gold" onClick={() => addToCart(item)}>Add to Cart</button>
-                <button className="btn-small-remove" onClick={() => toggleWishlist(item)}>Remove</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-}
-
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    CART PANEL
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function CartPanel({ open, onClose, onCheckout }) {
   const { cart, cartTotal, changeQty, removeFromCart } = useApp();
   return (
     <>
-      <div className={`overlay${open?" show":""}`} onClick={onClose} />
-      <div className={`side-panel${open?" open":""}`}>
+      <div className={`overlay${open ? " show" : ""}`} onClick={onClose} />
+      <div className={`side-panel${open ? " open" : ""}`}>
         <div className="panel-header">
           <div className="panel-title">Shopping Cart 🛍</div>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
         <div className="panel-items">
           {cart.length === 0 ? (
-            <div className="panel-empty"><div className="panel-empty-icon">🛒</div><div>Your cart is empty</div></div>
-          ) : cart.map(item => (
-            <div className="panel-item" key={item.id}>
-              <ProductImage src={item.image} category={item.category} className="panel-item-img" alt={item.name} />
-              <div className="panel-item-info">
-                <div className="panel-item-name">{item.name}</div>
-                <div className="panel-item-price">${item.price} × {item.qty} = <strong>${item.price * item.qty}</strong></div>
-              </div>
-              <div className="panel-item-actions">
-                <div className="qty-ctrl small">
-                  <button className="qty-btn" onClick={() => changeQty(item.id, -1)}>−</button>
-                  <span className="qty-num">{item.qty}</span>
-                  <button className="qty-btn" onClick={() => changeQty(item.id,  1)}>+</button>
-                </div>
-                <button className="btn-small-remove" onClick={() => removeFromCart(item.id)}>Remove</button>
-              </div>
+            <div className="panel-empty">
+              <div className="panel-empty-icon">🛒</div>
+              <div>Your cart is empty</div>
             </div>
-          ))}
+          ) : (
+            cart.map(item => (
+              <div className="panel-item" key={item.id}>
+                <ProductImage src={item.image} category={item.category} className="panel-item-img" />
+                <div className="panel-item-info">
+                  <div className="panel-item-name">{item.name}</div>
+                  <div className="panel-item-price">
+                    ${item.price} × {item.qty} = <strong>${item.price * item.qty}</strong>
+                  </div>
+                </div>
+                <div className="panel-item-actions">
+                  <div className="qty-ctrl small">
+                    <button className="qty-btn" onClick={() => changeQty(item.id, -1)}>−</button>
+                    <span className="qty-num">{item.qty}</span>
+                    <button className="qty-btn" onClick={() => changeQty(item.id, 1)}>+</button>
+                  </div>
+                  <button className="btn-small-remove" onClick={() => removeFromCart(item.id)}>Remove</button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
         {cart.length > 0 && (
           <div className="panel-footer">
@@ -435,9 +459,54 @@ function CartPanel({ open, onClose, onCheckout }) {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
+   WISHLIST PANEL
+══════════════════════════════════════════════════ */
+function WishlistPanel({ open, onClose, onGoToCart }) {
+  const { wishlist, addToCart, toggleWishlist } = useApp();
+  return (
+    <>
+      <div className={`overlay${open ? " show" : ""}`} onClick={onClose} />
+      <div className={`side-panel${open ? " open" : ""}`}>
+        <div className="panel-header">
+          <div className="panel-title">Wishlist ♥</div>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
+        <div className="panel-items">
+          {wishlist.length === 0 ? (
+            <div className="panel-empty">
+              <div className="panel-empty-icon">♡</div>
+              <div>Your wishlist is empty</div>
+            </div>
+          ) : (
+            wishlist.map(item => (
+              <div className="panel-item" key={item.id}>
+                <ProductImage src={item.image} category={item.category} className="panel-item-img" />
+                <div className="panel-item-info">
+                  <div className="panel-item-name">{item.name}</div>
+                  <div className="panel-item-price">${item.price}</div>
+                </div>
+                <div className="panel-item-actions">
+                  <button
+                    className="btn-small-gold"
+                    onClick={() => { addToCart(item); onGoToCart?.(); }}
+                  >
+                    Add to Cart
+                  </button>
+                  <button className="btn-small-remove" onClick={() => toggleWishlist(item)}>Remove</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+/* ══════════════════════════════════════════════════
    TESTIMONIALS
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Testimonials() {
   return (
     <section className="testimonials">
@@ -458,26 +527,31 @@ function Testimonials() {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    HOME
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Home({ onShop }) {
+  const { liveProducts } = useApp();
+  const [modal, setModal] = useState(null);
+
   return (
     <>
       <Hero onShop={onShop} />
+
       <section className="features-strip">
         {[
-          { icon:"🚚", title:"Free Shipping",   sub:"Worldwide delivery"  },
-          { icon:"💎", title:"18k Gold",         sub:"Certified quality"   },
-          { icon:"🔄", title:"30-Day Returns",   sub:"Hassle-free policy"  },
-          { icon:"🔒", title:"Secure Payment",   sub:"256-bit encryption"  },
-        ].map((f,i) => (
+          { icon:"🚚", title:"Free Shipping",  sub:"Worldwide delivery" },
+          { icon:"💎", title:"18k Gold",        sub:"Certified quality"  },
+          { icon:"🔄", title:"30-Day Returns",  sub:"Hassle-free policy" },
+          { icon:"🔒", title:"Secure Payment",  sub:"256-bit encryption" },
+        ].map((f, i) => (
           <div className="feature" key={i}>
             <span className="feature-icon">{f.icon}</span>
             <div><strong>{f.title}</strong><span>{f.sub}</span></div>
           </div>
         ))}
       </section>
+
       <section className="featured-section">
         <div className="section-header">
           <p className="section-eyebrow">✦ Handpicked For You</p>
@@ -485,31 +559,36 @@ function Home({ onShop }) {
           <p className="section-desc">Discover our most-loved designs, each one a testament to master craftsmanship.</p>
         </div>
         <div className="grid">
-          {PRODUCTS.slice(0,3).map((p,i) => <ProductCard key={p.id} product={p} onQuickView={() => {}} index={i} />)}
+          {liveProducts.slice(0, 3).map((p, i) => (
+            <ProductCard key={p.id} product={p} onQuickView={setModal} index={i} />
+          ))}
         </div>
         <div className="checkout-bar">
           <button className="btn-cta-gold" onClick={onShop}>View Full Collection →</button>
         </div>
       </section>
+
       <Testimonials />
+      {modal && <Modal product={modal} onClose={() => setModal(null)} />}
     </>
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SHOP
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Shop({ onCheckout }) {
+  const { liveProducts } = useApp();
   const [filter, setFilter] = useState("all");
   const [sort,   setSort]   = useState("default");
   const [modal,  setModal]  = useState(null);
   const [search, setSearch] = useState("");
 
-  let filtered = filter === "all" ? PRODUCTS : PRODUCTS.filter(p => p.category === filter);
+  let filtered = filter === "all" ? liveProducts : liveProducts.filter(p => p.category === filter);
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
-  if (sort === "price-asc")  filtered = [...filtered].sort((a,b) => a.price - b.price);
-  if (sort === "price-desc") filtered = [...filtered].sort((a,b) => b.price - a.price);
-  if (sort === "rating")     filtered = [...filtered].sort((a,b) => b.rating - a.rating);
+  if (sort === "price-asc")  filtered = [...filtered].sort((a, b) => a.price - b.price);
+  if (sort === "price-desc") filtered = [...filtered].sort((a, b) => b.price - a.price);
+  if (sort === "rating")     filtered = [...filtered].sort((a, b) => b.rating - a.rating);
 
   return (
     <div className="shop-page">
@@ -518,21 +597,30 @@ function Shop({ onCheckout }) {
         <div className="shop-hero-overlay" />
         <div className="shop-hero-text">
           <p className="section-eyebrow">✦ Our Collection</p>
-          <h1>Fine <em style={{fontStyle:"italic",color:"#e8c97a"}}>Jewellery</em></h1>
+          <h1>Fine <em style={{ fontStyle:"italic", color:"#e8c97a" }}>Jewellery</em></h1>
           <p>Discover pieces crafted for the extraordinary</p>
         </div>
       </div>
 
-      <div className="section-header" style={{ paddingBottom: "20px" }}>
+      <div className="shop-controls-wrap">
         <div className="shop-controls">
           <div className="search-wrap">
             <span className="search-icon">🔍</span>
-            <input className="search-input" placeholder="Search pieces..." value={search} onChange={e => setSearch(e.target.value)} />
+            <input
+              className="search-input"
+              placeholder="Search pieces..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
           </div>
           <div className="filters">
             {CATEGORIES.map(c => (
-              <button key={c} className={`filter-btn${filter===c?" active":""}`} onClick={() => setFilter(c)}>
-                {c.charAt(0).toUpperCase()+c.slice(1)}
+              <button
+                key={c}
+                className={`filter-btn${filter === c ? " active" : ""}`}
+                onClick={() => setFilter(c)}
+              >
+                {c.charAt(0).toUpperCase() + c.slice(1)}
               </button>
             ))}
           </div>
@@ -548,20 +636,24 @@ function Shop({ onCheckout }) {
       <div className="grid">
         {filtered.length === 0
           ? <div className="no-results">No pieces found for "{search}"</div>
-          : filtered.map((p,i) => <ProductCard key={p.id} product={p} onQuickView={setModal} index={i} />)
+          : filtered.map((p, i) => (
+              <ProductCard key={p.id} product={p} onQuickView={setModal} index={i} />
+            ))
         }
       </div>
+
       <div className="checkout-bar">
         <button className="btn-cta-gold" onClick={onCheckout}>Proceed to Checkout →</button>
       </div>
+
       {modal && <Modal product={modal} onClose={() => setModal(null)} />}
     </div>
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    ABOUT
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function About() {
   return (
     <div className="about-page">
@@ -570,20 +662,24 @@ function About() {
         <div className="about-hero-overlay" />
         <div className="about-hero-content">
           <p className="section-eyebrow">✦ Our Story</p>
-          <h1>Crafted with <em style={{fontStyle:"italic",color:"#e8c97a"}}>Passion</em></h1>
+          <h1>Crafted with <em style={{ fontStyle:"italic", color:"#e8c97a" }}>Passion</em></h1>
           <p>A legacy of fine jewellery spanning three decades</p>
         </div>
       </div>
       <div className="about-body">
         <div className="about-grid">
           <div>
-            <img className="about-img" src="https://images.unsplash.com/photo-1598560917807-1bae44bd2be8?w=800&auto=format&fit=crop" alt="Atelier" />
+            <img
+              className="about-img"
+              src="https://images.unsplash.com/photo-1598560917807-1bae44bd2be8?w=800&auto=format&fit=crop"
+              alt="Atelier"
+            />
           </div>
           <div className="about-text">
             <h2>Three Decades of Excellence</h2>
-            <p>Founded in 1994, Sparkling Ember began as a small atelier with a singular obsession: creating jewellery that transcends time. Our master craftsmen work with the finest 18k gold and ethically sourced gemstones to produce pieces that become heirlooms.</p>
-            <p>Every necklace, ring, and bracelet is meticulously hand-finished — inspected under magnification before it ever reaches your hands. We believe jewellery isn't just an accessory; it's a memory you wear.</p>
-            <p>Today, we serve clients in over 50 countries, maintaining the same uncompromising standards our founders instilled. When you choose Sparkling Ember, you choose a piece that will outlast trends and outlive generations.</p>
+            <p>Founded in 1994, Sparkling Ember began as a small atelier with a singular obsession: creating jewellery that transcends time. Our master craftsmen work with the finest 18k gold and ethically sourced gemstones.</p>
+            <p>Every necklace, ring, and bracelet is meticulously hand-finished — inspected under magnification before it ever reaches your hands. We believe jewellery is a memory you wear.</p>
+            <p>Today we serve clients in over 50 countries, maintaining the same uncompromising standards our founders instilled. When you choose Sparkling Ember, you choose a piece that will outlast trends.</p>
           </div>
         </div>
         <div className="about-values">
@@ -591,7 +687,7 @@ function About() {
             { icon:"💎", title:"Master Craftsmanship", desc:"Every piece is hand-finished by artisans with decades of experience in luxury jewellery." },
             { icon:"🌿", title:"Ethical Sourcing",     desc:"We source only conflict-free gemstones and recycled precious metals for all our collections." },
             { icon:"🎁", title:"Luxury Experience",    desc:"From our signature packaging to complimentary gift wrapping, every detail is considered." },
-          ].map((v,i) => (
+          ].map((v, i) => (
             <div className="value-card" key={i}>
               <div className="value-icon">{v.icon}</div>
               <h3>{v.title}</h3>
@@ -604,9 +700,9 @@ function About() {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    CONTACT
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Contact() {
   const [form, setForm] = useState({ name:"", email:"", subject:"", message:"" });
   const [sent, setSent] = useState(false);
@@ -624,24 +720,24 @@ function Contact() {
         <div className="contact-hero-overlay" />
         <div className="contact-hero-content">
           <p className="section-eyebrow">✦ Get In Touch</p>
-          <h1>Contact <em style={{fontStyle:"italic",color:"#e8c97a"}}>Us</em></h1>
-          <p>We'd love to hear from you</p>
+          <h1>Contact <em style={{ fontStyle:"italic", color:"#e8c97a" }}>Us</em></h1>
+          <p>We would love to hear from you</p>
         </div>
       </div>
       <div className="contact-body">
         <div className="contact-info">
-          <h3>Let's Connect</h3>
+          <h3>Let us Connect</h3>
           {[
-            { icon:"📍", title:"Visit Us",       text:"123 Jewellery Lane\nNew York, NY 10001" },
-            { icon:"📞", title:"Call Us",        text:"+1 (800) 555-0199\nMon–Fri, 9am–6pm EST" },
-            { icon:"✉️", title:"Email Us",       text:"hello@sparklingembers.com\nWe reply within 24 hours" },
-            { icon:"⏰", title:"Working Hours",  text:"Monday – Friday: 9am – 6pm\nSaturday: 10am – 4pm" },
-          ].map((c,i) => (
+            { icon:"📍", title:"Visit Us",      text:"123 Jewellery Lane\nNew York, NY 10001" },
+            { icon:"📞", title:"Call Us",       text:"+1 (800) 555-0199\nMon–Fri, 9am–6pm EST" },
+            { icon:"✉️", title:"Email Us",      text:"hello@sparklingembers.com\nWe reply within 24 hours" },
+            { icon:"⏰", title:"Working Hours", text:"Monday – Friday: 9am – 6pm\nSaturday: 10am – 4pm" },
+          ].map((c, i) => (
             <div className="contact-item" key={i}>
               <span className="contact-item-icon">{c.icon}</span>
               <div className="contact-item-text">
                 <strong>{c.title}</strong>
-                <span style={{whiteSpace:"pre-line"}}>{c.text}</span>
+                <span style={{ whiteSpace:"pre-line" }}>{c.text}</span>
               </div>
             </div>
           ))}
@@ -649,9 +745,9 @@ function Contact() {
         <div className="contact-form-wrap">
           {sent ? (
             <div style={{ textAlign:"center", padding:"40px 0" }}>
-              <div style={{ fontSize:"3rem", marginBottom:"16px" }}>✦</div>
-              <h3 style={{ fontFamily:"Playfair Display, serif", fontSize:"1.5rem", color:"var(--white)", marginBottom:"12px" }}>Message Sent!</h3>
-              <p style={{ color:"var(--muted)", fontSize:"0.9rem", lineHeight:1.8 }}>Thank you for reaching out. We'll get back to you within 24 hours.</p>
+              <div style={{ fontSize:"3rem", marginBottom:"16px", color:"#c9a84c" }}>✦</div>
+              <h3 style={{ fontFamily:"'Playfair Display',serif", fontSize:"1.5rem", color:"white", marginBottom:"12px" }}>Message Sent!</h3>
+              <p style={{ color:"#888", fontSize:"0.9rem", lineHeight:1.8 }}>Thank you for reaching out. We will get back to you within 24 hours.</p>
             </div>
           ) : (
             <>
@@ -672,7 +768,7 @@ function Contact() {
               </div>
               <div className="form-group">
                 <label className="form-label">Message</label>
-                <textarea className="form-textarea" value={form.message} onChange={set("message")} placeholder="Tell us how we can help you..." />
+                <textarea className="form-textarea" value={form.message} onChange={set("message")} placeholder="Tell us how we can help..." />
               </div>
               <button className="btn-cta-gold btn-full" onClick={handleSubmit}>Send Message →</button>
             </>
@@ -683,9 +779,9 @@ function Contact() {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    CHECKOUT
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 const EMPTY_FORM = { name:"", email:"", address:"", city:"", zip:"", card:"", expiry:"", cvv:"" };
 
 function Checkout({ onBack, onSuccess }) {
@@ -697,26 +793,38 @@ function Checkout({ onBack, onSuccess }) {
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }));
 
   const nextStep = () => {
-    if (["name","email","address","city","zip"].some(k => !form[k].trim())) { alert("Please fill in all shipping fields."); return; }
+    if (["name","email","address","city","zip"].some(k => !form[k].trim())) {
+      alert("Please fill in all shipping fields."); return;
+    }
     setStep(2);
   };
+
   const placeOrder = () => {
-    if (["card","expiry","cvv"].some(k => !form[k].trim())) { alert("Please fill in payment details."); return; }
+    if (["card","expiry","cvv"].some(k => !form[k].trim())) {
+      alert("Please fill in payment details."); return;
+    }
     if (cart.length === 0) { alert("Your cart is empty!"); return; }
-    clearCart(); setForm(EMPTY_FORM); onSuccess();
+    clearCart();
+    setForm(EMPTY_FORM);
+    onSuccess();
   };
 
   return (
     <div className="checkout-wrap">
       <button className="btn-back" onClick={onBack}>← Back to Shop</button>
       <div className="checkout-steps">
-        <div className={`checkout-step${step>=1?" active":""}`}><span className="step-num">1</span>Shipping</div>
+        <div className={`checkout-step${step >= 1 ? " active" : ""}`}>
+          <span className="step-num">1</span> Shipping
+        </div>
         <div className="step-connector" />
-        <div className={`checkout-step${step>=2?" active":""}`}><span className="step-num">2</span>Payment</div>
+        <div className={`checkout-step${step >= 2 ? " active" : ""}`}>
+          <span className="step-num">2</span> Payment
+        </div>
       </div>
       <div className="checkout-grid">
         <div className="checkout-form">
-          <h2 className="checkout-heading">{step===1 ? "Shipping Details" : "Payment Details"}</h2>
+          <h2 className="checkout-heading">{step === 1 ? "Shipping Details" : "Payment Details"}</h2>
+
           {step === 1 && (
             <>
               <div className="form-group">
@@ -741,9 +849,12 @@ function Checkout({ onBack, onSuccess }) {
                   <input className="form-input" value={form.zip} onChange={set("zip")} placeholder="10001" />
                 </div>
               </div>
-              <button className="btn-cta-gold btn-full" style={{marginTop:"8px"}} onClick={nextStep}>Continue to Payment →</button>
+              <button className="btn-cta-gold btn-full" style={{ marginTop:"8px" }} onClick={nextStep}>
+                Continue to Payment →
+              </button>
             </>
           )}
+
           {step === 2 && (
             <>
               <div className="card-visual">
@@ -768,21 +879,25 @@ function Checkout({ onBack, onSuccess }) {
                   <input className="form-input" value={form.cvv} onChange={set("cvv")} placeholder="•••" maxLength={3} />
                 </div>
               </div>
-              <div className="form-row" style={{marginTop:"8px"}}>
+              <div className="form-row" style={{ marginTop:"8px" }}>
                 <button className="btn-back-step" onClick={() => setStep(1)}>← Back</button>
-                <button className="btn-cta-gold" onClick={placeOrder} style={{flex:2}}>Place Order — ${grand}</button>
+                <button className="btn-cta-gold" onClick={placeOrder} style={{ flex:2 }}>
+                  Place Order — ${grand}
+                </button>
               </div>
             </>
           )}
         </div>
+
         <div>
           <div className="order-summary">
             <div className="summary-title">Order Summary</div>
-            {cart.length === 0
-              ? <p className="empty-summary">No items in cart.</p>
-              : cart.map(item => (
+            {cart.length === 0 ? (
+              <p className="empty-summary">No items in cart.</p>
+            ) : (
+              cart.map(item => (
                 <div className="summary-item" key={item.id}>
-                  <ProductImage src={item.image} category={item.category} className="summary-item-img" alt={item.name} />
+                  <ProductImage src={item.image} category={item.category} className="summary-item-img" />
                   <div className="summary-item-info">
                     <div className="summary-item-name">{item.name}</div>
                     <div className="summary-item-qty">Qty: {item.qty}</div>
@@ -790,7 +905,7 @@ function Checkout({ onBack, onSuccess }) {
                   <div className="summary-item-price">${item.price * item.qty}</div>
                 </div>
               ))
-            }
+            )}
             <hr className="summary-divider" />
             <div className="summary-line"><span>Subtotal</span><span>${cartTotal}</span></div>
             <div className="summary-line"><span>Shipping</span><span className="free-tag">FREE</span></div>
@@ -804,9 +919,9 @@ function Checkout({ onBack, onSuccess }) {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    SUCCESS
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Success({ onReset }) {
   return (
     <div className="success-wrap">
@@ -823,9 +938,9 @@ function Success({ onReset }) {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    FOOTER
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 function Footer({ setStep }) {
   return (
     <footer className="footer">
@@ -846,7 +961,6 @@ function Footer({ setStep }) {
           <h4>Company</h4>
           <a onClick={() => setStep("about")}>Our Story</a>
           <a onClick={() => setStep("about")}>Craftsmanship</a>
-          <a onClick={() => setStep("about")}>Sustainability</a>
           <a onClick={() => setStep("contact")}>Contact</a>
         </div>
         <div className="footer-col">
@@ -866,34 +980,45 @@ function Footer({ setStep }) {
   );
 }
 
-/* ══════════════════════════════════════
+/* ══════════════════════════════════════════════════
    ROOT APP
-══════════════════════════════════════ */
+══════════════════════════════════════════════════ */
 export default function App() {
   const [step,         setStep]         = useState("home");
   const [cartOpen,     setCartOpen]     = useState(false);
   const [wishlistOpen, setWishlistOpen] = useState(false);
 
-  useEffect(() => { window.scrollTo(0,0); }, [step]);
+  useEffect(() => { window.scrollTo(0, 0); }, [step]);
 
   const goCheckout = () => { setCartOpen(false); setStep("checkout"); };
 
   return (
     <AppProvider>
       <Navbar
-        onCartOpen={() => setCartOpen(true)}
-        onWishlistOpen={() => setWishlistOpen(true)}
         step={step}
         setStep={setStep}
+        onCartOpen={() => setCartOpen(true)}
+        onWishlistOpen={() => setWishlistOpen(true)}
       />
+
       {step === "home"     && <Home     onShop={() => setStep("shop")} />}
       {step === "shop"     && <Shop     onCheckout={goCheckout} />}
       {step === "about"    && <About />}
       {step === "contact"  && <Contact />}
       {step === "checkout" && <Checkout onBack={() => setStep("shop")} onSuccess={() => setStep("success")} />}
       {step === "success"  && <Success  onReset={() => setStep("home")} />}
-      <CartPanel     open={cartOpen}     onClose={() => setCartOpen(false)}     onCheckout={goCheckout} />
-      <WishlistPanel open={wishlistOpen} onClose={() => setWishlistOpen(false)} />
+
+      <CartPanel
+        open={cartOpen}
+        onClose={() => setCartOpen(false)}
+        onCheckout={goCheckout}
+      />
+      <WishlistPanel
+        open={wishlistOpen}
+        onClose={() => setWishlistOpen(false)}
+        onGoToCart={() => { setCartOpen(true); setWishlistOpen(false); }}
+      />
+
       {!["checkout","success"].includes(step) && <Footer setStep={setStep} />}
       <Toasts />
     </AppProvider>
