@@ -141,7 +141,6 @@ body {
   inset: 0;
   background-image: url('https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=1800&auto=format&fit=crop');
   background-size: cover;
-  background-position: center 30%;
   transform: scale(1.05);
   animation: heroZoom 12s ease-out forwards;
 }
@@ -492,7 +491,6 @@ body {
 /* BADGES */
 .card-badge {
   position: absolute;
-  top: 14px; left: 14px;
   padding: 4px 10px;
   font-size: 0.62rem;
   font-weight: 700;
@@ -509,7 +507,7 @@ body {
 .badge-classic    { background: #2d6a4f; color: white; }
 .card-discount {
   position: absolute;
-  top: 44px; left: 14px;
+  top: 32px;
   background: rgba(192,57,43,0.9);
   color: white;
   padding: 3px 8px;
@@ -1317,6 +1315,72 @@ body {
 }
 .shop-hero-text p { font-size: 0.9rem; color: rgba(255,255,255,0.55); }
 .no-results { color: var(--muted); text-align: center; padding: 80px; grid-column: 1/-1; font-size: 0.9rem; }
+
+/* ── SOLD OUT ── */
+.card-sold-out { opacity: 0.72; }
+.card-sold-out:hover { box-shadow: none; }
+.card-sold-out .card-img { filter: grayscale(60%); }
+
+.sold-out-ribbon {
+  position: absolute;
+  background: #c0392b;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 5px 14px 5px 18px;
+  z-index: 3;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.sold-out-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1;
+}
+.sold-out-overlay span {
+  background: rgba(192,57,43,0.92);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 10px 24px;
+  border-radius: 2px;
+}
+
+.stock-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 40px;
+  margin-bottom: 10px;
+}
+.stock-out { background: rgba(192,57,43,0.15); color: #e74c3c; border: 1px solid rgba(192,57,43,0.3); }
+.stock-low { background: rgba(230,126,34,0.15); color: #e67e22; border: 1px solid rgba(230,126,34,0.3); }
+
+.sold-out-price { color: var(--muted) !important; text-decoration: line-through; }
+
+.btn-sold-out {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+.btn-sold-out:hover {
+  background: rgba(255,255,255,0.04) !important;
+  border-color: rgba(255,255,255,0.08) !important;
+  color: var(--muted) !important;
+  transform: none !important;
+}
 
 /* ══════════════════════════════════════
    FOOTER
